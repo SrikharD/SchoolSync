@@ -52,4 +52,4 @@ temp/
 # yarn.lock
 # pnpm-lock.yaml
 
-The Project SchoolSync.txt
+*.txt
