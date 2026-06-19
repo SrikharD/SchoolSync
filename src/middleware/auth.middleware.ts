@@ -2,7 +2,7 @@ import { Request, Response, NextFunction } from 'express';
 import jwt from 'jsonwebtoken';
 import {JwtPayload, UserRole} from '../types';
 
-// Extending the express Request to carry the user payload.
+// Extend Express Request to carry the user payload.
 
 declare global {
     namespace Express {

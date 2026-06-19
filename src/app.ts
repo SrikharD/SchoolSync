@@ -11,28 +11,28 @@ dotenv.config();
 const app = express();
 const PORT = process.env.PORT || 3001;
 
-//Middleware
+// Middleware
 app.use(helmet());
 app.use(cors());
 app.use(express.json());
 
 // Health check
-app.get('health', (req, res) => {
-    res.status(200).json({ status: 'OK', service: 'Auth Service' });
+app.get('/health', (req, res) => {
+  res.status(200).json({ status: 'ok', service: 'auth-service' });
 });
 
 // Routes
 app.use('/api/auth', authRoutes);
 
-// Start the server after DB connection is established
+// Start server only after database connects
 AppDataSource.initialize()
-    .then(() => {
-        console.log('PostgreSQL connected successfully!');
-        app.listen(PORT, () => {
-            console.log(`Server is running on port ${PORT}`);
-        });
-    })
-    .catch((error) => {
-        console.error('Error connecting to the PostgreSQL database:', error);
-        process.exit(1);
+  .then(() => {
+    console.log('PostgreSQL connected successfully!');
+    app.listen(PORT, () => {
+      console.log(`Auth service running on port ${PORT}`);
     });
+  })
+  .catch((error) => {
+    console.error('Database connection failed:', error);
+    process.exit(1);
+  });
