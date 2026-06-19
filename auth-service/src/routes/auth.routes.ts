@@ -112,4 +112,6 @@ router.get('/me', authenticate, getMe);
  */
 router.get('/users', authenticate, authorize('admin'), getAllUsers);
 
+
+
 export default router;
