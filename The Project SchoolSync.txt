@@ -1,0 +1,105 @@
+The Project: SchoolSync — A School Operations & Communication Platform
+Think of it as a lightweight Google Classroom + Parent Communication Portal + Admin Operations Hub, built entirely by you.
+
+What It Does (The Real-World Problem It Solves)
+Most schools in India — including in Guntur — still manage the following things through WhatsApp groups, paper registers, and phone calls:
+
+Attendance tracking
+Fee payment reminders
+Exam results and report cards
+Timetable management
+Teacher-parent communication
+Library book tracking
+Bus/transport tracking notifications
+
+SchoolSync replaces all of that with a proper system.
+
+The Users & Roles (RBAC Maps Perfectly Here)
+RoleWhat They DoSuper AdminSchool management — manages all data, users, reportsTeacherMarks attendance, uploads grades, posts announcementsStudentViews timetable, grades, announcementsParentViews child's attendance, fees due, receives notificationsLibrarianManages book inventory, issue/return trackingAccountantManages fee collection, generates payment reports
+Six roles. Every one of them naturally uses a different part of the system. This is the richest RBAC scenario you can build — far better than Admin/User.
+
+The Microservices Breakdown
+1. Auth Service (Node.js + PostgreSQL)
+
+Login, JWT, role assignment. A parent can have multiple children linked to their account. A teacher can be assigned multiple classes. This is more complex than DevBoard's auth — and more realistic.
+2. Student Service (Node.js + PostgreSQL)
+
+Student profiles, class assignments, parent linkage. Core entity that every other service references.
+3. Attendance Service (Node.js + MongoDB)
+
+Teachers mark daily attendance per class. Kafka publishes an event every time a student is marked absent 3 days in a row — triggers a parent notification automatically. This is a genuinely useful real-world automation.
+4. Grades & Exam Service (Node.js + MongoDB)
+
+Teachers upload marks per subject per exam. Service calculates totals, percentages, ranks. Generates a report card JSON that the frontend renders as a PDF.
+5. Fee Service (Node.js + PostgreSQL)
+
+Fee structure per class, payment records, outstanding dues. When a payment is due in 7 days, a scheduled job publishes to RabbitMQ — Notification Service sends an SMS/email reminder to parent. Teaches you cron jobs + message queues together.
+6. Notification Service (Node.js + RabbitMQ)
+
+Consumes from RabbitMQ. Sends mock SMS, email, or in-app push. Listens to multiple queues: fee reminders, absence alerts, result announcements, general announcements.
+7. Library Service (Node.js + MongoDB)
+
+Book catalog, issue/return tracking, overdue alerts via RabbitMQ. Simple but complete CRUD with a real business workflow.
+8. Timetable Service (Node.js + MongoDB)
+
+Class-wise weekly schedule. Teachers and students view their own timetable. Admin manages it.
+9. Audit & Analytics Service (Kafka consumer + MongoDB)
+
+Every significant action across all services publishes a Kafka event. This service consumes them all and builds an analytics dashboard — daily attendance rate, fee collection rate, most-borrowed books, exam performance trends.
+10. API Gateway (Nginx)
+
+Single entry point, routes to all services, validates JWT at the gateway level.
+
+The Frontend Split
+React (TypeScript) — Student & Parent Portal
+
+Student dashboard: today's timetable, recent grades, attendance summary
+Parent dashboard: child's attendance heatmap, fees due, notifications inbox
+Clean, mobile-friendly UI — parents will use this on phones
+
+Angular (TypeScript) — Teacher & Admin Dashboard
+
+Teacher view: mark attendance for their class, upload marks, post announcements
+Admin view: manage all users, view analytics, generate reports
+Angular's structured, form-heavy approach fits admin workflows perfectly
+
+
+Where Every Tech Fits
+TechNatural Use Case in SchoolSyncReact + TypeScriptStudent/Parent portalAngular + TypeScriptTeacher/Admin dashboardREST APIEvery service — attendance, grades, fees, librarySwaggerDocument all endpoints — extremely clean because each service is smallPostmanBuild a full collection with environment variables (dev/prod)KafkaAbsence streak events, result published events, audit trail of all actionsRabbitMQFee reminders, absence alerts, announcement push notificationsDockerEach of the 10 services in its own containerKubernetesDeploy all containers, auto-restart failed services, rolling updatesJenkinsPush to GitHub → build → test → deploy to K8sRBAC6 roles with genuinely different access levelsMongoDBAttendance records, grades, library catalog, timetablesPostgreSQLUsers, students, fee structures, payment records
+
+The Kafka vs RabbitMQ Split (Interview Gold)
+This is the most common message broker question in interviews. SchoolSync gives you a crystal clear answer:
+Kafka is used for:
+
+Student marked absent 3 consecutive days → event stream → audit log + trigger notification
+Exam results published → event stream → analytics service updates class average
+Fee payment received → event stream → audit log
+
+You use Kafka here because you want event history, replay capability, and multiple consumers reading the same event independently.
+RabbitMQ is used for:
+
+Fee payment due in 7 days → task queue → one notification sent per student
+Announcement posted → fan-out exchange → all parents in that class get notified
+
+You use RabbitMQ here because you want guaranteed single delivery of a task — you don't want the fee reminder sent twice.
+When an interviewer asks "what's the difference between Kafka and RabbitMQ", you answer with this exact breakdown from your own project. That is a 10/10 answer.
+
+Learning Path
+Phase 1 — Auth + Student Service (Week 1–2)
+
+Get login working with 3 roles first (Admin, Teacher, Student). Build the Student CRUD API. Document with Swagger. Test with Postman. This gives you a working foundation with real relational data.
+Phase 2 — Attendance + Grades Service (Week 3–4)
+
+Your first Kafka producer. Teacher marks attendance → Kafka event. Build the Audit Service as your first Kafka consumer. Then add grades — this is pure REST CRUD with some business logic (calculate percentage, assign grade letter).
+Phase 3 — Fee Service + RabbitMQ (Week 5–6)
+
+Build the fee structure and payment recording. Add a cron job that checks for upcoming due dates and publishes to RabbitMQ. Build the Notification Service consumer. Now you have both brokers running and you understand the difference viscerally, not just theoretically.
+Phase 4 — Library + Timetable (Week 7)
+
+These are simpler services — good for reinforcing REST API patterns and Swagger documentation without adding new complexity.
+Phase 5 — Frontends (Week 8–10)
+
+React portal first — simpler, component-based. Then Angular admin dashboard. Both connect to your real APIs.
+Phase 6 — DevOps (Week 11–13)
+
+Dockerfiles → docker-compose locally → Kubernetes manifests → Jenkins pipeline. By this point you know your system well enough that the DevOps layer makes complete sense because you built what it's deploying.
