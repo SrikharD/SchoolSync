@@ -50,6 +50,6 @@ temp/
 # Package manager lock files (choose based on team preference)
 # package-lock.json
 # yarn.lock
-# pnpm-lock.yaml
+# pnpm-lock.yaml    
 
 Auth Service Software Dependencies.txt

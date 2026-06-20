@@ -42,8 +42,6 @@ touch "$SERVICE_DIR/src/types/index.ts"
 touch "$SERVICE_DIR/src/app.ts"
 
 touch "$SERVICE_DIR/.env"
-touch "$SERVICE_DIR/package.json"
-touch "$SERVICE_DIR/tsconfig.json"
 
 # Create .gitignore with predefined content
 cat > "$SERVICE_DIR/.gitignore" << 'EOF'
