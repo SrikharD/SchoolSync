@@ -1,5 +1,5 @@
 import { Router } from 'express';
-import { register, login, getMe, getAllUsers } from '../controllers/auth.controller';
+import { register, login, getMe, getAllUsers, getUserById } from '../controllers/auth.controller';
 import { authenticate, authorize } from '../middleware/auth.middleware';
 
 const router = Router();
@@ -108,6 +108,26 @@ router.get('/me', authenticate, getMe);
  */
 router.get('/users', authenticate, authorize('admin'), getAllUsers);
 
-
+/**
+ * @swagger
+ * /api/auth/users/{id}:
+ *   get:
+ *     summary: Get a single user by ID (used internally by other services)
+ *     tags: [Auth]
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: integer
+ *     responses:
+ *       200:
+ *         description: User found
+ *       404:
+ *         description: User not found
+ */
+router.get('/users/:id', authenticate, getUserById);
 
 export default router;
