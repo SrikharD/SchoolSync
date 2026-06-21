@@ -5,6 +5,8 @@ import helmet from 'helmet';
 import dotenv from 'dotenv';
 import { AppDataSource } from './config/database';
 import studentRoutes from './routes/student.routes';
+import swaggerUi from 'swagger-ui-express';
+import { swaggerSpec } from './config/swagger';
 
 dotenv.config();
 
@@ -18,6 +20,8 @@ app.use(express.json());
 app.get('/health', (req, res) => {
   res.status(200).json({ status: 'ok', service: 'student-service' });
 });
+
+app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerSpec));
 
 app.use('/api/students', studentRoutes);
 
