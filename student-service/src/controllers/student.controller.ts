@@ -1,6 +1,7 @@
 import { Request, Response } from 'express';
 import { AppDataSource } from '../config/database';
 import { Student } from '../entities/Student';
+import { verifyUserExists } from '../services/authServiceClient';
 
 const studentRepo = () => AppDataSource.getRepository(Student);
 
@@ -8,6 +9,16 @@ const studentRepo = () => AppDataSource.getRepository(Student);
 export const createStudent = async (req: Request, res: Response): Promise<void> => {
   try {
     const { userId, firstName, lastName, rollNumber, className, section, dateOfBirth, parentUserId } = req.body;
+
+    // Extract the raw token from the incoming request to forward it to Auth Service
+    const token = req.headers.authorization!.split(' ')[1];
+
+    // Verify the userId actually exists in Auth Service before creating the student
+    const userExists = await verifyUserExists(userId, token);
+    if (!userExists) {
+      res.status(400).json({ message: `User with id ${userId} does not exist in Auth Service` });
+      return;
+    }
 
     const existing = await studentRepo().findOne({ where: { rollNumber, className, section } });
     if (existing) {
