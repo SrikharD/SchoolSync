@@ -43,6 +43,13 @@ touch "$SERVICE_DIR/src/app.ts"
 
 touch "$SERVICE_DIR/.env"
 
+# Create .dockerignore with predefined content
+cat > "$SERVICE_DIR/.dockerignore" << 'EOF'
+node_modules/
+dist/
+.env
+EOF
+
 # Create .gitignore with predefined content
 cat > "$SERVICE_DIR/.gitignore" << 'EOF'
 # Dependencies
