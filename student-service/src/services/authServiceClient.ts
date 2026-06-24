@@ -18,5 +18,5 @@ export const verifyUserExists = async (userId: number, token: string) => {
     } catch(error){
         return null;
     }
-}
+};
 
