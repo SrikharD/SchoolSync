@@ -1,0 +1,89 @@
+# version: '3.8'
+
+services:
+
+  # ─── Database ───────────────────────────────────────────────
+  postgres:
+    image: postgres:15
+    container_name: schoolsync_postgres
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  # ─── Database Initializer ────────────────────────────────────
+  # Runs once to create both databases, then exits
+  db-init:
+    image: postgres:15
+    depends_on:
+      postgres:
+        condition: service_healthy
+    environment:
+      PGPASSWORD: postgres
+    entrypoint: ["/bin/sh", "-c"]
+    command:
+      - |
+        psql -h postgres -U postgres -tc "SELECT 1 FROM pg_database WHERE datname = 'schoolsync_auth'" | grep -q 1 || psql -h postgres -U postgres -c "CREATE DATABASE schoolsync_auth"
+        psql -h postgres -U postgres -tc "SELECT 1 FROM pg_database WHERE datname = 'schoolsync_student'" | grep -q 1 || psql -h postgres -U postgres -c "CREATE DATABASE schoolsync_student"
+    restart: on-failure
+
+  # ─── Auth Service ────────────────────────────────────────────
+  auth-service:
+    build:
+      context: ./auth-service
+      dockerfile: Dockerfile
+    container_name: schoolsync_auth
+    ports:
+      - "3001:3001"
+    environment:
+      PORT: 3001
+      DB_HOST: postgres
+      DB_PORT: 5432
+      DB_USERNAME: postgres
+      DB_PASSWORD: postgres
+      DB_NAME: schoolsync_auth
+      JWT_SECRET: your_super_secret_key_change_this_in_production
+      JWT_EXPIRES_IN: 7d
+      NODE_ENV: development
+    depends_on:
+      postgres:
+        condition: service_healthy
+      db-init:
+        condition: service_completed_successfully
+
+  # ─── Student Service ─────────────────────────────────────────
+  student-service:
+    build:
+      context: ./student-service
+      dockerfile: Dockerfile
+    container_name: schoolsync_student
+    ports:
+      - "3002:3002"
+    environment:
+      PORT: 3002
+      DB_HOST: postgres
+      DB_PORT: 5432
+      DB_USERNAME: postgres
+      DB_PASSWORD: postgres
+      DB_NAME: schoolsync_student
+      JWT_SECRET: your_super_secret_key_change_this_in_production
+      NODE_ENV: development
+      AUTH_SERVICE_URL: http://auth-service:3001
+    depends_on:
+      postgres:
+        condition: service_healthy
+      db-init:
+        condition: service_completed_successfully
+      auth-service:
+        condition: service_started
+
+volumes:
+  postgres_data:
