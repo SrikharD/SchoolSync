@@ -34,7 +34,7 @@ touch "$SERVICE_DIR/src/config/swagger.ts"
 
 touch "$SERVICE_DIR/src/entities/${ENTITY_NAME}.ts"
 
-touch "$SERVICE_DIR/src/middleware/${SERVICE_NAME}.middleware.ts"
+touch "$SERVICE_DIR/src/middleware/auth.middleware.ts"
 touch "$SERVICE_DIR/src/routes/${SERVICE_NAME}.routes.ts"
 touch "$SERVICE_DIR/src/controllers/${SERVICE_NAME}.controller.ts"
 

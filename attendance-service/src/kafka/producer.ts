@@ -1,4 +1,4 @@
-import { Kafka, Producer, Partitioners } from 'Kafkajs';
+import { Kafka, Producer, Partitioners } from 'kafkajs';
 
 const kafka = new Kafka({
     clientId: 'attendance-service',

@@ -7,7 +7,7 @@ import {
     updateStudent,
     deactivateStudent
 } from '../controllers/student.controller';
-import { authenticate, authorize } from '../middleware/student.middleware';
+import { authenticate, authorize } from '../middleware/auth.middleware';
 
 const router = Router();
 

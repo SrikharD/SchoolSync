@@ -5,9 +5,9 @@ export class Student {
     @PrimaryGeneratedColumn()
     id!: number;
 
-    // Links this student record back to their login account in Auth Service.
-    // Student Service does NOT store passwords or emails for login —
-    // that data lives only in Auth Service. This is just a reference ID.
+  // Links this student record back to their login account in Auth Service.
+  // Student Service does NOT store passwords or emails for login —
+  // that data lives only in Auth Service. This is just a reference ID.
   @Column({ unique: true })
   userId!: number;
 
