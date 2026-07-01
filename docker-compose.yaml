@@ -159,6 +159,39 @@ services:
       retries: 10
       start_period: 30s
 
+  rabbitmq:
+    image: rabbitmq:3-management
+    container_name: schoolsync_rabbitmq
+    ports:
+      - "5672:5672" # AMQP Protocol Port
+      - "15672:1572" # Management UI (browser dashboard)
+    environment:
+      RABBITMQ_DEFAULT_USER: guest
+      RABBITMQ_DEFAULT_PASS: guest
+    healthcheck:
+      test: ["CMD", "rabbitmq-diagnostics", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+  
+  notification-service:
+    build: 
+      context: ./notification-service
+      dockerfile: Dockerfile
+    container_name: schoolsync_notification
+    ports:
+      - "3004:3004"
+    environment:
+      PORT: 3004
+      KAFKA_BROKER: kafka:9092
+      RABBITMQ_URL: amqp://guest:guest@rabbitmq:5672
+      NODE_ENV: development
+    depends_on:
+      kafka:
+        condition: service_healthy
+      rabbitmq:
+        condition: service_healthy
+
 volumes:
   postgres_data:
   mongodb_data:
