@@ -5,6 +5,10 @@ import { publishNotificationTask } from '../rabbitmq/publisher';
 let consumer: Consumer
 
 export const startKafkaConsumer = async (): Promise<void> => {
+    
+    //debugging: log the Kafka broker from config to ensure it's being read correctly.
+    console.log('Kafka broker from config:', config.kafka.broker);
+    
     const kafka = new Kafka ({
         clientId: 'notification-service',
         brokers: [config.kafka.broker],
