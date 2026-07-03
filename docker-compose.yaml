@@ -192,6 +192,19 @@ services:
       rabbitmq:
         condition: service_healthy
 
+  api-gateway:
+    image: nginx:alpine
+    container_name: schoolsync_gateway
+    ports:
+      - "8080:8080"
+    volumes:
+      - ./nginx/nginx.conf:/etc/nginx/nginx.conf:ro
+    depends_on:
+      - auth-service
+      - student-service
+      - attendance-service
+    restart: unless-stopped
+
 volumes:
   postgres_data:
   mongodb_data:
